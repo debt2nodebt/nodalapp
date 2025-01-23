@@ -6,6 +6,8 @@ import pandas as pd
 from docx import Document
 from io import BytesIO
 
+from exceptions import PendingDeprecationWarning
+
 # Define the fixed Excel file path
 file_path = "excel_file\Bank Nodal Officer Email I.D.xlsx"
 
