@@ -1,39 +1,24 @@
-# Install necessary libraries
-# pip install streamlit pandas openpyxl python-docx
-
 import streamlit as st
 import pandas as pd
 from docx import Document
 from io import BytesIO
 
-from exceptions import PendingDeprecationWarning
-
-# Define the fixed Excel file path
-file_path = "excel_file\Bank Nodal Officer Email I.D.xlsx"
-
 # Function to fetch details from the Excel file
-def fetch_emails_from_excel(bank_names):
-    try:
-        df = pd.read_excel(file_path)  # Load the Excel file
-        result = []
-        
-        # Iterate over the provided bank names and fetch their details
-        for bank in bank_names:
-            row = df[df['Bank Name'].str.lower() == bank.lower()]
-            if not row.empty:
-                details = {
-                    'Bank Name': bank,
-                    'Customer Email': row['Customer Email'].values[0] if not pd.isna(row['Customer Email'].values[0]) else '',
-                    'Nodal Email': row['Nodal Email'].values[0] if not pd.isna(row['Nodal Email'].values[0]) else '',
-                    'Grievance Email': row['Grievance Email'].values[0] if not pd.isna(row['Grievance Email'].values[0]) else ''
-                }
-            else:
-                details = {'Bank Name': bank, 'Customer Email': '', 'Nodal Email': '', 'Grievance Email': ''}
-            result.append(details)
-        return result
-    except FileNotFoundError:
-        st.error("Excel file not found. Please check the file path.")
-        return []
+def fetch_emails_from_excel(df, bank_names):
+    result = []
+    for bank in bank_names:
+        row = df[df['Bank Name'].str.lower() == bank.lower()]
+        if not row.empty:
+            details = {
+                'Bank Name': bank,
+                'Customer Email': row['Customer Email'].values[0] if not pd.isna(row['Customer Email'].values[0]) else '',
+                'Nodal Email': row['Nodal Email'].values[0] if not pd.isna(row['Nodal Email'].values[0]) else '',
+                'Grievance Email': row['Grievance Email'].values[0] if not pd.isna(row['Grievance Email'].values[0]) else ''
+            }
+        else:
+            details = {'Bank Name': bank, 'Customer Email': '', 'Nodal Email': '', 'Grievance Email': ''}
+        result.append(details)
+    return result
 
 # Function to create a Word document
 def create_word_file(bank_details):
@@ -55,35 +40,34 @@ def create_word_file(bank_details):
 
 # Streamlit App
 def main():
-    st.title("Nodal Generator")
+    st.title("Nodal Email Generator")
 
-    # Load Excel file and display it
-    try:
-        df = pd.read_excel(file_path)
-        st.success("File loaded successfully from fixed path!")
-        st.dataframe(df.head())  # Display first few rows
-    except FileNotFoundError:
-        st.error("Excel file not found. Please check the path.")
-        return
+    # File uploader
+    uploaded_file = st.file_uploader("Upload Excel File", type=['xlsx'])
+    
+    if uploaded_file is not None:
+        df = pd.read_excel(uploaded_file)
+        st.success("File loaded successfully!")
+        st.dataframe(df.head())  # Show preview of the uploaded file
 
-    # Input for bank names
-    bank_names_input = st.text_area("Enter Bank Names (comma-separated)", "")
-    if bank_names_input:
-        bank_names = [name.strip() for name in bank_names_input.split(',')]
+        # Input for bank names
+        bank_names_input = st.text_area("Enter Bank Names (comma-separated)", "")
+        if bank_names_input:
+            bank_names = [name.strip() for name in bank_names_input.split(',')]
 
-        # Generate the document
-        if st.button("Generate Word File"):
-            bank_details = fetch_emails_from_excel(bank_names)
-            if bank_details:
-                word_file = create_word_file(bank_details)
-                
-                # Provide a download button
-                st.download_button(
-                    label="Download Word File",
-                    data=word_file,
-                    file_name="Banks_Email_Nodal.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
+            # Generate the document
+            if st.button("Generate Word File"):
+                bank_details = fetch_emails_from_excel(df, bank_names)
+                if bank_details:
+                    word_file = create_word_file(bank_details)
+                    st.download_button(
+                        label="Download Word File",
+                        data=word_file,
+                        file_name="Banks_Email_Nodal.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+    else:
+        st.warning("Please upload the Excel file to proceed.")
 
 if __name__ == "__main__":
     main()
