@@ -1,5 +1,4 @@
 docx
 streamlit
 pandas
-io
 BytesIO
