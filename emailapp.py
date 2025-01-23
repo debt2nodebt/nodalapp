@@ -7,7 +7,7 @@ from docx import Document
 from io import BytesIO
 
 # Define the fixed Excel file path
-file_path = r"C:\Users\DELL\Desktop\Kartik\Bank Emails\Bank Nodal Officer Email I.D.xlsx"
+file_path = "Bank Nodal Officer Email I.D.xlsx"
 
 # Function to fetch details from the Excel file
 def fetch_emails_from_excel(bank_names):
