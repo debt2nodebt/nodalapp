@@ -1,5 +1,5 @@
-docx
 streamlit
 pandas
-Document
+openpyxl
+python-docx
 
